@@ -1,2 +1,2 @@
-# iwa
-iwa tasks and project
+# Task source codes
+Bartłomiej Ćwiklak, 257210
