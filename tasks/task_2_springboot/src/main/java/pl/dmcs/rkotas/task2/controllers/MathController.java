@@ -6,60 +6,36 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import pl.dmcs.rkotas.task2.model.Mathematics;
-
-import static java.lang.Math.sqrt;
+import pl.dmcs.rkotas.task2.controllers.FibonacciSolver;
+import pl.dmcs.rkotas.task2.controllers.QuadraticSolver;
 
 @Controller
 public class MathController {
+    private final QuadraticSolver quadraticSolver;
+    private final FibonacciSolver fibonacciSolver;
+
+    public MathController(QuadraticSolver quadraticSolver, FibonacciSolver fibonacciSolver) {
+        this.quadraticSolver = quadraticSolver;
+        this.fibonacciSolver = fibonacciSolver;
+    }
 
     @RequestMapping("/math")
     public String math(Model model) {
-        model.addAttribute("message", "Calculate your stuff!");
-        Mathematics newMath = new Mathematics();
-        model.addAttribute("math", newMath);
+        model.addAttribute("math", new Mathematics());
         return "math";
     }
 
     @RequestMapping(value = "/calculatex1x2.html", method = RequestMethod.POST)
-    public String calculatex1x2(@ModelAttribute("math") Mathematics mathematics) {
-        double a = mathematics.getCoeffa();
-        double b = mathematics.getCoeffb();
-        double c = mathematics.getCoeffc();
-
-        if (a == 0) {
-            System.out.println("This is a linear function.");
-            return "redirect:math";
-        }
-
-        mathematics.setDelta((b * b) - (4 * a * c));
-        double delta = mathematics.getDelta();
-        mathematics.setx1(((b * -1) - sqrt(delta)) / (2 * a));
-        if (delta < 0) {
-            System.out.println("There are no real roots.");
-        } else if (delta == 0) {
-            System.out.println("One root, x1 = " + mathematics.getx1());
-        } else {
-            mathematics.setx2(((b * -1) + sqrt(delta)) / (2 * a));
-            System.out.printf("Two roots, x1 = %f, x2 = %f%n", mathematics.getx1(), mathematics.getx2());
-        }
-
-        return "redirect:math";
+    public String calculatex1x2(@ModelAttribute("math") Mathematics mathematics, Model model) {
+        String result = quadraticSolver.calculate(mathematics);
+        model.addAttribute("calculationResult", result);
+        return "math";
     }
 
     @RequestMapping(value = "/calculatefibonacci.html", method = RequestMethod.POST)
-    public String calculatefibonacci(@ModelAttribute("math") Mathematics mathematics) {
-        long n = mathematics.getFibonacciN();
-        if (n <= 0) {
-            System.out.println("0");
-            return "redirect:math";
-        }
-        long a = 0, b = 1;
-        for (long i = 2; i <= n; i++) {
-            long temp = a + b;
-            a = b;
-            b = temp;
-        }
-        System.out.println(b);
-        return "redirect:math";
+    public String calculatefibonacci(@ModelAttribute("math") Mathematics mathematics, Model model) {
+        String result = fibonacciSolver.calculate(mathematics.getFibonacciN());
+        model.addAttribute("calculationResult", "Fibonacci result: " + result);
+        return "math";
     }
 }
